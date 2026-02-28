@@ -1,0 +1,115 @@
+{% extends "assets/base.html" %}
+
+{% block content %}
+<h1>Corporate Assets</h1>
+
+<form method="GET" class="row g-3 mb-4">
+    <div class="col-auto">
+        <input type="text" name="search" class="form-control" placeholder="Search name or user..."
+            value="{{ request.GET.search }}">
+    </div>
+    <div class="col-auto">
+        <select name="asset_type" class="form-select">
+            <option value="">All Types</option>
+            {% for code, display in asset_types %}
+            <option value="{{ code }}" {% if request.GET.asset_type == code %}selected{% endif %}>
+                {{ display }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="{% url 'asset-list' %}" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Asset Name</th>
+            <th>Type</th>
+            <th>Cost</th>
+            <th>Assigned To</th>
+            <th>Created At</th>
+            <th>Details</th>
+            {% if user.is_manager_or_admin %}
+            <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.name }}</td>
+            <td>{{ asset.get_asset_type_display }}</td>
+            <td>${{ asset.cost }}</td>
+            <td>
+                {% if asset.assigned_to %}
+                {{ asset.assigned_to.username }}
+                {% else %}
+                <span style="color:red">Unassigned</span>
+                {% endif %}
+            </td>
+            <td>{{ asset.created_at|date:"M d, Y" }}</td>
+            <td>
+                <a href="{% url 'asset-detail' asset.pk %}" class="btn btn-outline-primary btn-sm">View</a>
+            </td>
+            {% if user.is_manager_or_admin %}
+            <td>
+                <a href="{% url 'asset-update' asset.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'asset-delete' asset.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                <a href="{% url 'asset-history' asset.pk %}" class="btn btn-sm btn-info">History</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% comment %} Part 1: Bootstrap Pagination Controls {% endcomment %}
+{% if is_paginated %}
+<nav aria-label="Asset list pagination">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.asset_type %}&asset_type={{ request.GET.asset_type }}{% endif %}">&laquo;
+                Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&laquo; Previous</span>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.asset_type %}&asset_type={{ request.GET.asset_type }}{% endif %}">{{
+                num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.asset_type %}&asset_type={{ request.GET.asset_type }}{% endif %}">Next
+                &raquo;</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">Next &raquo;</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

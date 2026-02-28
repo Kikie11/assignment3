@@ -1,0 +1,59 @@
+{% extends "assets/base.html" %}
+
+{% block content %}
+    <h1>History for: {{ asset.name }}</h1>
+    <a href="{% url 'asset-list' %}" class="btn btn-secondary mb-3">Back to Assets</a>
+
+    {% if messages %}
+    <div class="alert alert-success">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <table class="table table-sm table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Date Modified</th>
+                <th>Action</th>
+                <th>Modified By</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Cost</th>
+                <th>Assigned To</th>
+                <th>Revert</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in history_records %}
+            <tr>
+                <td>{{ record.history_date|date:"M d, Y H:i" }}</td>
+                <td>
+                    {% if record.history_type == '+' %}<span class="badge bg-success">Created</span>
+                    {% elif record.history_type == '~' %}<span class="badge bg-warning text-dark">Updated</span>
+                    {% elif record.history_type == '-' %}<span class="badge bg-danger">Deleted</span>
+                    {% endif %}
+                </td>
+                <td>{{ record.history_user.username|default:"System" }}</td>
+                <td>{{ record.name }}</td>
+                <td>{{ record.get_asset_type_display }}</td>
+                <td>${{ record.cost }}</td>
+                <td>{{ record.assigned_to.username|default:"Unassigned" }}</td>
+                <td>
+                    {% if forloop.counter0 > 0 %} 
+                    <form method="post" action="{% url 'asset-revert' asset.pk record.history_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Revert to this version?');">
+                            Rollback Here
+                        </button>
+                    </form>
+                    {% else %}
+                        <span class="text-muted">Current</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

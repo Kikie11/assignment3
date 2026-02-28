@@ -1,0 +1,50 @@
+{% extends "assets/base.html" %}
+
+{% block content %}
+    <h1>{{ asset.name }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Type:</strong> {{ asset.get_asset_type_display }}</p>
+            <p><strong>Cost:</strong> ${{ asset.cost }}</p>
+            <p><strong>Assigned To:</strong>
+                {% if asset.assigned_to %}
+                    {{ asset.assigned_to.username }}
+                {% else %}
+                    <span class="text-danger">Unassigned</span>
+                {% endif %}
+            </p>
+            <p><strong>Created:</strong> {{ asset.created_at|date:"M d, Y" }}</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Maintenance History</h3>
+        <a href="{% url 'maintenance-add' asset.pk %}" class="btn btn-success">Add Maintenance Record</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Service Date</th>
+                <th>Description</th>
+                <th>Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in maintenance_logs %}
+            <tr>
+                <td>{{ log.service_date|date:"M d, Y" }}</td>
+                <td>{{ log.description }}</td>
+                <td>${{ log.cost }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center text-muted">No maintenance records found for this asset.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'asset-list' %}" class="btn btn-secondary">&laquo; Back to Asset List</a>
+{% endblock %}

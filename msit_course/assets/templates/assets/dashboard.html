@@ -1,0 +1,21 @@
+{% extends "assets/base.html" %}
+
+{% block content %}
+<h1>Executive Dashboard</h1>
+
+<div style="background: #eef; padding: 15px; border-radius: 5px;">
+    <h3>Total Asset Valuation: ${{ total_asset_value }}</h3>
+</div>
+
+<h3>Inventory Breakdown</h3>
+<ul>
+    {% for item in assets_by_type %}
+    <li>{{ item.asset_type }}: <strong>{{ item.count }} units</strong></li>
+    {% empty %}
+    <li>No assets found.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+<a href="{% url 'export-csv' %}" class="btn btn-success">Export to CSV</a>
+{% endblock %}
